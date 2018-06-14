@@ -17,3 +17,39 @@ Route::get('/', function () {
 
 
 Route::resource('articles','ArticlesController');
+
+
+Route::get('password/reset','Auth\ForgotPasswordController@showLinkRequestForm');
+
+
+Route::get('auth/login',function (){
+    $credentials = [
+        'email' => 'john@example.com',
+        'password' => 'password',
+    ];
+
+    if(!auth()->attempt($credentials)){
+        return 'Worng Id/Password! Please try again!';
+    }
+
+    return redirect('protected');
+});
+
+
+Route::get('protected',['middleware'=>'auth',function(){
+    dump(session()->all());
+
+    return 'Welcome! '.auth()->user()->name;
+}]);
+
+
+Route::get('auth/logout',function(){
+    auth()->logout();
+
+    return 'See You Again!';
+});
+
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
