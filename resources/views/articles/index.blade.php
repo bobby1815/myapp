@@ -3,7 +3,7 @@
 @section('content')
 
 
-    <div class="contianer">
+    <div class="container">
         <h1>포럼 글 목록</h1>
         <hr/>
 
@@ -19,10 +19,14 @@
             <p>글이 없습니다.</p>
             @endforelse
         </ul>
+
+        <div id="ForWrit" class="txt">
+            <a href="/articles/create">Write</a>
+        </div>
     </div>
 
     @if($articles->count())
-        <div class="text-center paginator__article">
+        <div class="text-center paginator__article" style="margin-left: 45%;">
             {!! $articles->render() !!}
         </div>
     @endif

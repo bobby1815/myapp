@@ -30,6 +30,7 @@ class ArticlesController extends Controller
     public function create()
     {
         //
+        return view('articles.create');
     }
 
     /**
@@ -41,6 +42,30 @@ class ArticlesController extends Controller
     public function store(Request $request)
     {
         //
+        $rules = [
+            'title' => ['required'],
+            'content'=>['required','min:10'],
+        ];
+
+        $message =[
+            'title.required' => 'Title must be Required (필수사항)',
+            'content.required'=>'Content must be Required(필수사항)',
+            'content.min'=>'Content will be more than 10 Characters'
+        ];
+
+        $validator = \Validator::make($request->all(), $rules, $message);
+
+        if($validator->fails()){
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $article = \App\User::find(1)->articles()->create($request->all());
+
+        if(! $article){
+            return back()->withErrors('flash_message','Save Fail! please Try Again!')->withInput();
+        }
+
+        return redirect(route('articles.index'))->with('flash_message','Success Save!');
     }
 
     /**
