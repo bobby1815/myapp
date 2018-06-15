@@ -46,6 +46,31 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        if(app()->environment('production')){
+
+            $statusCode     = 400;
+            $title          = 'Sorry! :(';
+            $description    = 'Error! Try Agagin Please!';
+
+            if($exception instanceof \Illuminate\Database\Eloquent\ModelNotFoundException or
+            $exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+
+
+                $statusCode = 404;
+                $description = $exception->getMessage() ?: 'Sorry! Request Page does not exist!';
+
+            }
+
+
+
+                return response(view('errors.notice',[
+                    'title'         => $title,
+                    'description'   => $description,
+
+                ]),$statusCode);
+            }
+
+
         return parent::render($request, $exception);
     }
 }
