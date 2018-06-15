@@ -65,6 +65,8 @@ class ArticlesController extends Controller
             return back()->withErrors('flash_message','Save Fail! please Try Again!')->withInput();
         }
 
+        event(new \App\Events\Event($article));
+
         return redirect(route('articles.index'))->with('flash_message','Success Save!');
     }
 

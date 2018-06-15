@@ -58,3 +58,9 @@ Route::get('/home', 'HomeController@index')->name('home');
 /*DB::listen(function ($query) {
     var_dump($query->sql);
 });*/
+
+/*Event::listen('article.created',function($article){
+
+    var_dump('Get event. Event status will be');
+    var_dump($article->toArray());
+});*/
