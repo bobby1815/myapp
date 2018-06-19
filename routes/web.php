@@ -11,61 +11,21 @@
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [
+    'as' => 'root',
+    'uses' => 'WelcomeController@index',
+]);
+Route::get('/home', [
+    'as' => 'home',
+    'uses' => 'HomeController@index',
+]);
+Route::resource('articles', 'ArticlesController');
 
 
-Route::resource('articles','ArticlesController');
-
-
-Route::get('password/reset','Auth\ForgotPasswordController@showLinkRequestForm');
-
-
-Route::get('auth/login',function (){
-    $credentials = [
-        'email' => 'john@example.com',
-        'password' => 'password',
-    ];
-
-    if(!auth()->attempt($credentials)){
-        return 'Worng Id/Password! Please try again!';
-    }
-
-    return redirect('protected');
-});
-
-
-Route::get('protected',['middleware'=>'auth',function(){
-    dump(session()->all());
-
-    return 'Welcome! '.auth()->user()->name;
-}]);
-
-
-Route::get('auth/logout',function(){
-    auth()->logout();
-
-    return 'See You Again!';
-});
-
-
-Auth::routes();
-
-Route::get('/home', 'HomeController@index')->name('home');
-
-
-/*DB::listen(function ($query) {
-    var_dump($query->sql);
-});*/
-
-/*Event::listen('article.created',function($article){
-
-    var_dump('Get event. Event status will be');
-    var_dump($article->toArray());
-});*/
-
-
+/*******************************************
+ *
+ * @description Markdown Editor Example
+ *******************************************/
 Route::get('markdown',function(){
    $text =<<<EOT
     
@@ -86,12 +46,28 @@ EOT;
    return app(ParsedownExtra::class)->text($text);
 });
 
+/*******************************************
+ *
+ * @description Markdown Viewer fo .md files
+ *******************************************/
 Route::get('docs/{file?}',function($file = null){
 
     $text = (new App\Documentation)->get($file);
 
     return App(ParsedownExtra::class)->text($text);
 });
+
+
+/* Markdown Viewer */
+Route::get('docs/{file?}', 'DocsController@show');
+Route::get('docs/images/{image}', 'DocsController@image')
+    ->where('image', '[\pL-\pN\._-]+-img-[0-9]{2}.png');
+
+
+/*******************************************
+ *
+ * @description Send Mail System in Laravel Example
+ *******************************************/
 
 Route::get('mail',function (){
 
@@ -109,3 +85,80 @@ Route::get('mail',function (){
         }
     );
 });
+
+
+/*******************************************
+ *
+ * @description User Register
+ *******************************************/
+
+Route::get('auth/register',[
+   'as'   =>'users.create',
+   'uses' =>'UsersController@create'
+]);
+
+Route::post('auth/register',[
+   'as'   => 'users.store',
+   'uses' => 'UsersController@store'
+]);
+
+Route::get('auth/confirm/{code}',[
+    'as'   => 'users.confirm',
+    'uses' => 'UsersController@confirm'
+])->where('code','[\pL-\pN]{60}');
+
+/*******************************************
+ *
+ * @description User Auth
+ *******************************************/
+
+Route::get('auth/login',[
+    'as'   => 'sessions.create',
+    'uses' => 'SessionsController@create'
+]);
+
+Route::post('auth/login',[
+   'as'    => 'sessions.store',
+   'uses'  => 'SessionsController@store',
+]);
+
+Route::get('auth/logout',[
+    'as'   => 'sessions.destroy',
+    'uses' => 'SessionsController@destroy'
+]);
+
+/*******************************************
+ *
+ * @description User PW Reset
+ *******************************************/
+
+Route::get('auth/remind',[
+   'as'    => 'remind.create',
+   'uses'  => 'PasswordsController@getRemind',
+]);
+
+Route::post('auth/remind',[
+    'as'   => 'remind.store',
+    'uses' => 'PasswordsController@postRemind',
+]);
+
+Route::get('auth/reset/{token}',[
+    'as'   => 'reset.create',
+    'uses' => 'PasswordsController@getReset'
+])->where('token','[\pL-\pN]{64}');
+
+Route::post('auth/reset',[
+    'as'   => 'reset.store',
+    'uses' => 'PasswordsController@postReset'
+]);
+
+
+/***********************************************
+ *
+ * @description Social Login
+ ***********************************************/
+
+Route::get('social/{provider}', [
+	'as'   => 'social.login',
+	'uses' => 'SocialController@execute',
+]);

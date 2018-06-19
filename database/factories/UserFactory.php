@@ -1,36 +1,31 @@
 <?php
-
-use Faker\Generator as Faker;
-
 /*
 |--------------------------------------------------------------------------
 | Model Factories
 |--------------------------------------------------------------------------
 |
-| This directory should contain each of the model factory definitions for
-| your application. Factories provide a convenient way to generate new
-| model instances for testing / seeding your application's database.
+| Here you may define all of your model factories. Model factories give
+| you a convenient way to create models for testing and seeding your
+| database. Just tell the factory how a default model should look.
 |
 */
-
-$factory->define(App\User::class, function (Faker $faker) {
-    return [
-        'name' => $faker->name,
-        'email' => $faker->unique()->safeEmail,
-        'password' => bcrypt('password'), // secret
-        'remember_token' => str_random(10),
-    ];
+$factory->define(App\User::class, function (Faker\Generator $faker) {
+	$activated = $faker->randomElement([0, 1]);
+	return [
+		'name' => $faker->name,
+		'email' => $faker->safeEmail,
+		'password' => bcrypt('password'),
+		'remember_token' => str_random(10),
+		'activated' => $activated,
+		'confirm_code' => $activated ? str_random(60) : null,
+	];
 });
-
-
-$factory->define(App\Article::class, function (Faker $faker) {
-    $date = $faker->dateTimeThisMonth;
-
-
-    return [
-        'title' => $faker->sentence(),
-        'content' => $faker->paragraph(),
-        'created_at' => $date,
-        'updated_at' => $date,
-    ];
+$factory->define(App\Article::class, function (Faker\Generator $faker) {
+	$date = $faker->dateTimeThisMonth;
+	return [
+		'title' => $faker->sentence(),
+		'content' => $faker->paragraph(),
+		'created_at' => $date,
+		'updated_at' => $date,
+	];
 });

@@ -1,22 +1,44 @@
 {
-    "private": true,
-    "scripts": {
-        "dev": "npm run development",
-        "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
-        "watch": "npm run development -- --watch",
-        "watch-poll": "npm run watch -- --watch-poll",
-        "hot": "cross-env NODE_ENV=development node_modules/webpack-dev-server/bin/webpack-dev-server.js --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
-        "prod": "npm run production",
-        "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
-    },
-    "devDependencies": {
-        "axios": "^0.18",
-        "bootstrap": "^4.0.0",
-        "popper.js": "^1.12",
-        "cross-env": "^5.1",
-        "jquery": "^3.2",
-        "laravel-mix": "^2.0",
-        "lodash": "^4.17.4",
-        "vue": "^2.5.7"
-    }
+  "name": "myapp",
+  "version": "1.0.0",
+  "description": "<p align=\"center\"><img src=\"https://laravel.com/assets/img/components/logo-laravel.svg\"></p>",
+  "main": "gulpfile.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "bootstrap-sass": "^3.3.7",
+    "dropzone": "^5.4.0",
+    "jquery": "^3.3.1",
+    "popper.js": "^1.14.3",
+    "select2": "^4.0.6-rc.1",
+    "vue-resource": "^1.5.1"
+  },
+  "devDependencies": {
+    "bootstrap": "^4.1.1",
+    "font-awesome": "^4.7.0",
+    "gulp": "^3.3.4",
+    "highlightjs": "^9.10.0",
+    "laravel-elixir": "^6.0.0-18",
+    "laravel-elixir-vue": "^0.1.8",
+    "laravel-elixir-webpack-official": "^1.0.10"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bobby1815/myapp.git"
+  },
+  "keywords": [
+    "Laravel"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bobby1815/myapp/issues"
+  },
+  "homepage": "https://github.com/bobby1815/myapp#readme"
 }

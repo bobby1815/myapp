@@ -1,7 +1,14 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: dongeon
- * Date: 18. 6. 18
- * Time: 오후 2:38
- */
+<footer class="container">
+    <ul class="list-inline pull-right">
+        <li><i class="fa fa-language"></i></li>
+        <li class="active">한국어</li>
+        <li>English</li>
+    </ul>
+
+    <div>
+        &copy; {{ date('Y') }}
+        <a href="{{ config('project.url') }}">
+            {{ config('app.name') }}
+        </a>
+    </div>
+</footer>

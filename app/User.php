@@ -15,9 +15,14 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'activated','confirm_cdoe','name', 'email', 'password',
     ];
 
+    /**
+     * The attributes that should be date for arrays.
+     *
+     * @var array
+     */
     protected $dates = ['last_login'];
 
     /**
@@ -26,13 +31,25 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token','confirm_code'
     ];
+
+    /**
+     * The attributes that should be casts for arrays.
+     *
+     * @var array
+     */
+    protected $casts = ['activated'=>'boolean',];
 
     public function articles(){
 
         return $this->hasMany(Article::class);
     }
+
+	public function scopeSocialUser($query, $email){
+
+    	return $query->where($email)->whereNull('password');
+	}
 
 
 }

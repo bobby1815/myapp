@@ -1,7 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dongeon
- * Date: 18. 6. 15
- * Time: 오후 3:26
- */
+
+if(! function_exists('markdown')){
+
+    function markdown($text = null){
+
+        return app(ParsedownExtra::class)->text($text);
+    }
+}

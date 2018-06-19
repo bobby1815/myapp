@@ -1,7 +1,2 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: dongeon
- * Date: 18. 6. 18
- * Time: 오후 3:51
- */
+Welcome! {{ $user->name }}.
+Open URl for Check to Complete Register : {{ route('users.confirm', $user->confirm_code) }}
