@@ -1,7 +1,20 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: dongeon
- * Date: 18. 6. 19
- * Time: 오후 4:24
- */
+@extends('layouts.app')
+@section('content')
+    <div class="page-header">
+        <h4> Forum <small> \ Edit \ {{$article->title}}</small></h4>
+    </div>
+
+
+    <form action="{{ route('articles.update', $article->id) }}" method="POST" enctype="multipart/form-data" class="form__article">
+        {!! csrf_field() !!}
+        {!! method_field('PUT') !!}
+
+        @include('articles.partial.form')
+
+        <div class="form-group text-center">
+            <button type="submit" onclick="alert(1);" class="btn btn-primary">
+                Modify
+            </button>
+        </div>
+    </form>
+@stop

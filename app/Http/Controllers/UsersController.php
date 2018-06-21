@@ -25,13 +25,36 @@ class UsersController extends Controller
      ******************************************************************************/
     public function store(Request $request){
 
-    	if ($socialUser = User::socialUser($request->get('email'))->first()) {
+    	if ($socialUser = \App\User::socialUser($request->get('email'))->first()) {
 		    return $this->updateSocialAccount($request, $socialUser);
 	    }
 
 	    return $this->createNativeAccount($request);
     }
 
+	/******************************************************************************
+	 * @param Request $request
+	 * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+	 ******************************************************************************/
+	protected function createNativeAccount(Request $request) {
+
+		$this->validate($request, [
+			'name' => 'required|max:255',
+			'email' => 'required|email|max:255|unique:users',
+			'password' => 'required|confirmed|min:6',
+		]);
+		$confirmCode = str_random(60);
+		$user = \App\User::create([
+			'name' => $request->input('name'),
+			'email' => $request->input('email'),
+			'password' => bcrypt($request->input('password')),
+			'confirm_code' => $confirmCode,
+		]);
+		event(new \App\Events\UserCreated($user));
+		return $this->respondCreated(
+			'가입하신 메일 계정으로 가입 확인 메일을 보내드렸습니다. 가입 확인하시고 로그인해 주세요.'
+		);
+	}
 	/******************************************************************************
 	 * @param Request $request
 	 * @param \App\User $user

@@ -8,6 +8,8 @@ class Article extends Model{
 
     protected $fillable = ['title','content'];
 
+    protected  $with =['user',];
+
     public function user(){
         return $this->belongsTo(User::class);
     }
@@ -17,4 +19,8 @@ class Article extends Model{
         return $this->belongsToMany(Tag::class);
     }
 
+    public function attachments(){
+
+    	return $this->hasMany(Attachment::class);
+    }
 }

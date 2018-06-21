@@ -7,11 +7,16 @@ $size = isset($size) ? $size : 48;
 
 
 @if(isset($user) and $user)
+    <!--
+    <b>{{$user->email}}</b>
+    <p style="color: blue">{{gravatar_profile_url($user->email)}}</p>
+    <p style="color: red">{{gravatar_url($user->email)}}</p>
+    -->
     <a href="{{gravatar_profile_url($user->email)}}" class="pull-left">
-        <img src="{{gravatar_profile_url($user->email)}}" class="media-object img-thumbnail" alt="{{$user->name}}">
+        <img src="{{gravatar_url($user->email,$size)}}" class="media-object img-thumbnail" alt="{{$user->name}}">
     </a>
     @else
     <a href="{{gravatar_profile_url('unknown@example.com')}}" class="pull-left">
-        <img src="{{gravatar_profile_url('unknown@example.com')}}" class="media-object img-thumbnail" alt="Unknown User">
+        <img src="{{gravatar_url('unknown@example.com',$size)}}" class="media-object img-thumbnail" alt="Unknown User">
     </a>
-ex@endif
+@endif

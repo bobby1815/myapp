@@ -3,22 +3,30 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ArticlesController extends Controller
 {
 
-    /**
+
+	public function __construct () {
+		$this->middleware('auth',['except' =>['index','show']]);
+	}
+
+	/**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($slug = null)
     {
-        //
-        $articles = \App\Article::latest()->paginate(3);
+	    $query = $slug
+		    ? \App\Tag::whereSlug($slug)->firstOrFail()->articles()
+		    : new \App\Article;
 
+	    //$articles = \App\Article::latest()->paginate(3);
 
-
+	    $articles = $query->latest()->paginate(2);
         return view('articles.index',compact('articles'));
     }
 
@@ -29,8 +37,9 @@ class ArticlesController extends Controller
      */
     public function create()
     {
-        //
-        return view('articles.create');
+        $article = new \App\Article;
+
+        return view('articles.create', compact('article'));
     }
 
     /**
@@ -39,35 +48,23 @@ class ArticlesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\ArticlesRequest $request)
     {
-        //
-        $rules = [
-            'title' => ['required'],
-            'content'=>['required','min:10'],
-        ];
+	    $article = $request->user()->articles()->create($request->all());
 
-        $message =[
-            'title.required' => 'Title must be Required (필수사항)',
-            'content.required'=>'Content must be Required(필수사항)',
-            'content.min'=>'Content will be more than 10 Characters'
-        ];
-
-        $validator = \Validator::make($request->all(), $rules, $message);
-
-        if($validator->fails()){
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $article = \App\User::find(1)->articles()->create($request->all());
 
         if(! $article){
             return back()->withErrors('flash_message','Save Fail! please Try Again!')->withInput();
         }
 
+
+		// Tags Sync
+        $article->tags()->sync($request->input('tags'));
+
+
         event(new \App\Events\Event($article));
 
-        return redirect(route('articles.index'))->with('flash_message','Success Save!');
+        return redirect(route('articles.index'));
     }
 
     /**
@@ -76,23 +73,25 @@ class ArticlesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(\App\Article $article)
     {
         //
-        $article = \App\Article::findOrFail($id);
-        debug($article->toArray);
+        //$article = \App\Article::findOrFail($id);
+        //debug($article->toArray);
         return view('articles.show',compact('article'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param  $article
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(\App\Article $article)
     {
-        //
+    	$this->authorize('update',$article);
+
+        return view('articles.edit',compact('article'));
     }
 
     /**
@@ -102,9 +101,14 @@ class ArticlesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(\App\Http\Requests\ArticlesRequest $request,\App\Article $article)
     {
-        //
+    	$this->authorize('delete',$article);
+        $article->update($request->all());
+	    $article->tags()->sync($request->input('tags'));
+        flash()->success('Success Modified!!');
+
+        return redirect(route('articles.show',$article->id));
     }
 
     /**
@@ -113,8 +117,11 @@ class ArticlesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
-    {
-        //
-    }
+	public function destroy(\App\Article $article)
+	{
+		$this->authorize('delete', $article);
+		$article->delete();
+		return response()->json([], 204);
+	}
+
 }

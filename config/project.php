@@ -6,8 +6,24 @@
  * Time: 오후 1:51
  */
 
+
 return [
-    'name' => 'My Application',
+    'name' => 'YongSanZip',
     'url'  => 'http://myapp.test:8000',
     'description' => '',
+
+	'tags' =>[
+		'laravel' => 'Laravel',
+		'lumen'   => 'Lumen',
+		'general' => 'General',
+		'server'  => 'Server',
+		'tip'     => 'tip',
+	],
+
+	'mimes' => [
+		'png',
+		'jpg',
+		'zip',
+		'tar',
+	],
 ];

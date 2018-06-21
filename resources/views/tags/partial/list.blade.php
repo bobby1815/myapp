@@ -1,7 +1,7 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: dongeon
- * Date: 18. 6. 20
- * Time: 오전 11:42
- */
+@if($tags->count())
+    <ul class="tags__article">
+        @foreach($tags as $tag)
+            <li><a href="{{route('tags.articles.index',$tag->slug)}}">{{$tag->name}}</a></li>
+        @endforeach
+</ul>
+@endif

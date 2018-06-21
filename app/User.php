@@ -1,55 +1,65 @@
 <?php
-
 namespace App;
-
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-
 class User extends Authenticatable
 {
-    use Notifiable;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'activated','confirm_cdoe','name', 'email', 'password',
-    ];
-
-    /**
-     * The attributes that should be date for arrays.
-     *
-     * @var array
-     */
-    protected $dates = ['last_login'];
-
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'password', 'remember_token','confirm_code'
-    ];
-
-    /**
-     * The attributes that should be casts for arrays.
-     *
-     * @var array
-     */
-    protected $casts = ['activated'=>'boolean',];
-
-    public function articles(){
-
-        return $this->hasMany(Article::class);
-    }
-
-	public function scopeSocialUser($query, $email){
-
-    	return $query->where($email)->whereNull('password');
+	use Notifiable;
+	/**
+	 * The attributes that are mass assignable.
+	 *
+	 * @var array
+	 */
+	protected $fillable = [
+		'name',
+		'email',
+		'password',
+		'confirm_code',
+		'activated',
+	];
+	/**
+	 * The attributes that should be hidden for arrays.
+	 *
+	 * @var array
+	 */
+	protected $hidden = [
+		'password',
+		'remember_token',
+		'confirm_code',
+	];
+	/**
+	 * The attributes that should be mutated to dates.
+	 *
+	 * @var array
+	 */
+	protected $dates = [
+		'last_login',
+	];
+	/**
+	 * The attributes that should be cast to native types.
+	 *
+	 * @var array
+	 */
+	protected $casts = [
+		'activated' => 'boolean',
+	];
+	/* Relationships */
+	public function articles() {
+		return $this->hasMany(Article::class);
+	}
+	/* Query Scopes */
+	public function scopeSocialUser(\Illuminate\Database\Eloquent\Builder $query, $email)
+	{
+		return $query->whereEmail($email)->whereNull('password')->whereActivated(1);
 	}
 
-
+	/* Helpers */
+	public function isAdmin()
+	{
+		return $this->id === 1;
+	}
+	public function isSocialUser()
+	{
+		return is_null($this->password) && $this->activated;
+	}
 }

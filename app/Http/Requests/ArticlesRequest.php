@@ -6,6 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ArticlesRequest extends FormRequest
 {
+
+	protected $dontFlash = ['files',];
+
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -23,9 +26,14 @@ class ArticlesRequest extends FormRequest
      */
     public function rules()
     {
+	    $mimes = implode(',', config('project.mimes'));
+
         return [
             'title'     =>['required'],
             'content'   =>['required','min:10'],
+	        'tags'      =>['required','array'],
+	        'files'     =>['array'],
+	        'files.*' => ['sometimes', "mimes:{$mimes}", 'max:30000'],
         ];
     }
 
@@ -33,7 +41,10 @@ class ArticlesRequest extends FormRequest
         return [
 
             'required'      => ':attribute must be required',
-            'min'           => ':attirvute must be more than 10 Characters'
+            'min'           => ':attirvute must be more than 10 Characters',
+	        'array'         => 'You Can use only Array',
+	        'mimes'         => ':values Only!',
+	        'max'           => 'Under :max Kb. ',
         ];
     }
 
