@@ -4,45 +4,64 @@
     @php $viewName = 'articles.show'; @endphp
 
     <div class="page-header">
-        <h4>Forum <small> / {{$article->title}}</small></h4>
+        <h4><a href="{{ route('articles.index') }}">Forum</a> <small>
+                / {{ $article->title }}
+            </small>
+        </h4>
     </div>
 
-    <article data-id="{{$article->id}}">
-        @include('articles.partial.article', compact('article'))
+    <div class="row container__article">
+        <div class="col-md-3 sidebar__article">
+            <aside>
+                @include('tags.partial.index')
+            </aside>
+        </div>
 
-        <p>{!! markdown($article->content) !!}</p>
-    </article>
+        <div class="col-md-9 list__article">
+            <article data-id="{{ $article->id }}">
+                @include('articles.partial.article', compact('article'))
 
-    <div class="text-center action__article">
-        @can('update',$article)
-        <a href="{{route('articles.edit',$article->id)}}" class="btn btn-info">
-            <i class="fa fa-trash-o">Modify</i>
-        </a>
-        @endcan
-        @can('delete',$article)
-        <button id="button__delete" class="btn btn-danger button__delete">
-            <i class="fa fa-trash-o">
-                Delete
-            </i>
-        </button>
-            @endcan
-        <a href="{{route('articles.index')}}" class="btn btn-default">
-            <i class="fa fa-list">List</i>
-        </a>
+                <div class="content__article">
+                    {!! markdown($article->content) !!}
+                </div>
+
+                @include('tags.partial.list', ['tags' => $article->tags])
+            </article>
+
+            <div class="text-center action__article">
+                @can('update', $article)
+                    <a href="{{ route('articles.edit', $article->id) }}" class="btn btn-info">
+                        <i class="fa fa-pencil"></i>
+                        MODIFY
+                    </a>
+                @endcan
+                @can('delete', $article)
+                    <button class="btn btn-danger button__delete">
+                        <i class="fa fa-trash-o"></i>
+                        DELETE
+                    </button>
+                @endcan
+                <a href="{{ route('articles.index') }}" class="btn btn-default">
+                    <i class="fa fa-list"></i>
+                    LIST
+                </a>
+            </div>
+
+            <div class="container__comment">
+                @include('comments.index')
+            </div>
+        </div>
     </div>
 @stop
 
+
+
 @section('script')
     <script>
-        $.ajaxSetup({ headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
-        });
-
 
         $('.button__delete').on('click', function (e) {
             var articleId = $('article').data('id');
 
-            console.log("Check articleId ====> " , articleId);
             if (confirm('Delete Forum.')) {
                 $.ajax({
                     type: 'delete',

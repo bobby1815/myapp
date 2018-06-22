@@ -190,3 +190,20 @@ Route::resource('attachments',
  * @description File upload Extra
  ***********************************************/
 Route::get('attachments/{file}', 'AttachmentsController@show');
+
+
+/***********************************************
+ *
+ * @description Comment
+ ***********************************************/
+Route::resource('comments','CommentsController',['only' =>['update','destroy']]);
+Route::resource('articles.comments','CommentsController',['only' =>'store']);
+
+/***********************************************
+ *
+ * @description Vote
+ ***********************************************/
+Route::post('comments/{comment}/votes',[
+	'as'    =>'comments.vote',
+	'uses'  =>'CommentsController@vote',
+	]);

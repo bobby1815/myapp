@@ -9,14 +9,10 @@ class ArticlesTableSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
-    {
-        $user = App\User::all();
+    public function run(){
 
-        $user->each(function ($user){
-            $user->articles()->save(
-                factory(App\Article::class)->make()
-            );
-        });
+
+	    App\Article::truncate();
+	    factory(App\Article::class, 10)->create();
     }
 }

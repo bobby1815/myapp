@@ -23,4 +23,15 @@ class Article extends Model{
 
     	return $this->hasMany(Attachment::class);
     }
+
+/*    public function comments(){
+	    return $this->morphToMany(Comment::class, "commentable", "comments", $relationName = "commentable_id", $relatedPivotKey = "id");
+//    return $this->morphToMany(Comment::class, "commentable", "comments", "commentable_id", "commentable_type");
+    }*/
+
+	public function comments() {
+		return $this->morphMany(Comment::class, 'commentable');
+	}
+
+
 }
