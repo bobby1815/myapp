@@ -2,10 +2,18 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
+use \Illuminate\Database\Eloquent\Model;
+
+
 
 class Comment extends Model{
 
+	use \Illuminate\Database\Eloquent\SoftDeletes;
+	/********************************************************************************************
+	 * @var array
+	 * @Description
+	 ********************************************************************************************/
+	protected $dates = ['deleted_at'];
 	/********************************************************************************************
 	 * @var array
 	 * @Description

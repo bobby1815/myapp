@@ -21,6 +21,7 @@ class CommentsController extends Controller
 
     	flash()->success('Save Success! ');
 
+		event(new \App\Events\CommentsEvent($comment));
     	return redirect(route('articles.show',$article->id).'#comment_'.$comment->id);
     }
 
@@ -33,7 +34,12 @@ class CommentsController extends Controller
 
     public function destroy(\App\Comment $comment){
 
-    	$comment->delete();
+    	if($comment->replies->count>0){
+    		$comment->delete();
+	    } else {
+    		$comment->votes()->delete();
+    		$comment->forceDelete();
+	    }
 
     	return response()->json([],204);
     }

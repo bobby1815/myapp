@@ -1,7 +1,7 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dongeon
- * Date: 18. 6. 22
- * Time: 오후 5:47
- */
+return [
+	'title' => '마크다운 뷰어',
+	'messages' => [
+		'not_found' => '요청하신 파일이 없습니다.',
+	],
+];

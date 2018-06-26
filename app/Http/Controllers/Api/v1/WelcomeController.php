@@ -1,7 +1,25 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dongeon
- * Date: 18. 6. 25
- * Time: 오후 12:54
- */
+namespace App\Http\Controllers\Api\v1;
+class WelcomeController extends \App\Http\Controllers\Controller
+{
+	/**
+	 * Say hello to visitors.
+	 *
+	 * @return \Illuminate\Contracts\View\Factory
+	 */
+	public function index() {
+		return response()->json([
+			'name'      => config('app.name').'API',
+			'message'   => 'This is a base endpoint of v1 API',
+			'links'     => [
+					'rel'   =>'self',
+					'href'  => route(\Route::currentRouteName())
+
+			],
+			[
+				'rel'   =>'api.v1.articles',
+				'href'  =>route('api.v1.articles.index')
+			],
+		],200,[],JSON_PRETTY_PRINT);
+	}
+}

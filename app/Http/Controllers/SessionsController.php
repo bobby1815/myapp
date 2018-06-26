@@ -45,10 +45,33 @@ class SessionsController extends Controller
             return back()->withInput();
         }
 
-        flash('Welcome Laravel World ' . auth()->user()->name);
-        return redirect()->intended('home');
+
+        $token  = is_api_domain()
+	            ? jwt() ->attempt($request->only('email','password'))
+	            : auth()->attempt($request->only('email','password'),$request->has('remember'));
+
+	    if (! $token) {
+		    if (\App\User::socialUser($request->input('email'))->first()) {
+			    return $this->respondSocialUser();
+		    }
+	    }
+
+        //flash('Welcome Laravel World ' . auth()->user()->name);
+        //return redirect()->intended('home');
+
+	    return $this->respondCreated($token);
     }
 
+
+	protected function respondCreated($message)
+	{
+		flash(
+			trans('auth.sessions.info_welcome', ['name' => auth()->user()->name])
+		);
+		return ($return = request('return'))
+			? redirect(urldecode($return))
+			: redirect()->intended(route('home'));
+	}
     /****************************************************************
      * @param $message
      * @return \Illuminate\Http\RedirectResponse

@@ -1,3 +1,12 @@
+<div class="form-group">
+    <div class="checkbox">
+        <label>
+            <input type="checkbox" name="notification" value="{{ old('notification', $article->notification) }}">
+            Get alram when replies are here!
+        </label>
+    </div>
+</div>
+
 <div class="form-group {{$errors->has('title') ? 'has-error' : ''}}">
     <label for="title">Title</label>
     <input type="text" name="title" id="title" value="{{old('title' ,$article->title)}}" class="form-control">

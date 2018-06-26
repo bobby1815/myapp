@@ -12,8 +12,10 @@
 <div class="list__comment">
     @forelse($comments as $comment)
         @include('comments.partial.comment', [
-          'parentId' => $comment->id,
-          'isReply' => false,
+          'parentId'    => $comment->id,
+          'isReply'     => false,
+          'hasChild'    => $comment->replies->count(),
+          'isTrashed'   => $comment->trashed(),
         ])
     @empty
     @endforelse

@@ -56,13 +56,29 @@
             @include('comments.partial.edit')
         @endcan
 
+        @if($isTrashed and ! $hasChild)
+
+
+        @elseif($isTrashed and $hasChild)
+
+            <div class="text-danger content__commnet">
+                It's already delete!
+            </div>
+
+
         @forelse ($comment->replies as $reply)
             @include('comments.partial.comment', [
-              'comment' => $reply,
-              'isReply' => true,
+                'comment' => $reply,
+                'isReply' => true,
+                'hasChild'    => $comment->replies->count(),
+                'isTrashed'   => $comment->trashed(),
             ])
         @empty
         @endforelse
+
+        @else
+
+        @endif
 
     </div>
 </div>

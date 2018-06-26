@@ -16,6 +16,11 @@
 
             <small>
                 • {{ $article->created_at->diffForHumans() }}
+                • Hits {{ $article->view_count }}
+
+                @if($article->comment_count>0)
+                    • Comment {{ $article->comment_count }}
+                @endif
             </small>
         </p>
 

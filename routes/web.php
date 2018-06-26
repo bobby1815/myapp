@@ -207,3 +207,12 @@ Route::post('comments/{comment}/votes',[
 	'as'    =>'comments.vote',
 	'uses'  =>'CommentsController@vote',
 	]);
+
+/***********************************************
+ *
+ * @description Locale
+ ***********************************************/
+Route::get('locale',[
+	'as'    => 'locale',
+	'uses'  => 'WelcomeController@locale',
+]);

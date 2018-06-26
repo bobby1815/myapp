@@ -1,7 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dongeon
- * Date: 18. 6. 22
- * Time: 오후 5:46
- */
+return [
+	'dashboard' => [
+		'title' => 'Dashboard',
+		'message' => 'You are logged in!',
+	],
+	'error' => [
+		'title' => 'Sorry. :(',
+		'description' => 'Some bad thing happened.',
+		'not_found' => 'Requested URL or resource does not exist.',
+	]
+];

@@ -4,13 +4,22 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ArticlesController extends Controller
+class ArticlesController extends Controller implements Cacheable
 {
+	/**
+	 * ArticlesController constructor.
+	 */
+	public function __construct(){
+		parent::__construct();
 
-
-	public function __construct () {
 		$this->middleware('auth',['except' =>['index','show']]);
+	}
+
+	public function cacheTags () {
+
+		return 'articles';
 	}
 
 	/**
@@ -18,16 +27,26 @@ class ArticlesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($slug = null)
+    public function index(Request $request , $slug = null)
     {
 	    $query = $slug
 		    ? \App\Tag::whereSlug($slug)->firstOrFail()->articles()
 		    : new \App\Article;
 
-	    //$articles = \App\Article::latest()->paginate(3);
+	    $query = $query->orderBy(
+	    	$request->input('sort','created_at'),
+		    $request->input('order','desc')
+	    );
 
-	    $articles = $query->latest()->paginate(2);
-        return view('articles.index',compact('articles'));
+	    if($keyword = request()->input('q')){
+	    	$raw    = 'MATCH(title,content) AGAINST(? IN BOOLEAN MODE)';
+	    	$query  = $query->whereRaw($raw, [$keyword]);
+	    }
+
+	    $articles   = $query->paginate(3);
+
+        //return view('articles.index',compact('articles'));
+	    return $this->respondCollection($articles);
     }
 
     /**
@@ -50,8 +69,13 @@ class ArticlesController extends Controller
      */
     public function store(\App\Http\Requests\ArticlesRequest $request)
     {
-	    $article = $request->user()->articles()->create($request->all());
 
+	    $payload = array_merge($request->all(), [
+		    'notification' => $request->has('notification'),
+	    ]);
+
+	    //$article = $request->user()->articles()->create($payload);
+	    $article = \App\User::find(1)->articles()->create($payload);
 
         if(! $article){
             return back()->withErrors('flash_message','Save Fail! please Try Again!')->withInput();
@@ -63,8 +87,10 @@ class ArticlesController extends Controller
 
 
         event(new \App\Events\Event($article));
+        event(new \App\Events\ModelChanged(['articles']));
 
-        return redirect(route('articles.index'));
+        //return redirect(route('articles.index'));
+	    return $this->respondCreated($article);
     }
 
     /**
@@ -73,9 +99,17 @@ class ArticlesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(\App\Article $article)
-    {
-        $comments = $article->comments()->with('replies')->whereNull('parent_id')->latest()->get();
+    public function show(\App\Article $article){
+
+    	$cacheKey       = cache('articles.index');
+
+    	$article->view_count +=1;
+    	$article->save();
+	    $comments = $article->comments()
+		    ->with('replies')
+		    ->withTrashed()
+		    ->whereNull('parent_id')
+		    ->latest()->get();
 
         return view('articles.show',compact('article','comments'));
     }
@@ -123,4 +157,14 @@ class ArticlesController extends Controller
 		return response()->json([], 204);
 	}
 
+
+	protected function respondCollection(\Illuminate\Contracts\Pagination\LengthAwarePaginator $articles){
+
+		return view('articles.index',compact('articles'));
+	}
+
+	protected function respondCreated(\App\Article $article){
+
+		flash()->success(trans('forum.articles.success_writing'));
+	}
 }
