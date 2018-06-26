@@ -6,8 +6,21 @@ use Illuminate\Http\Request;
 
 class SessionsController extends Controller
 {
+	use \Illuminate\Foundation\Auth\ThrottlesLogins;
 
-    /****************************************************************
+	protected $lockoutTime = 60;
+
+	protected $maxLoginAttempts =5;
+
+
+	public function username(){
+
+		return 'email';
+	}
+
+
+
+	/****************************************************************
      * SessionsController constructor.
      ****************************************************************/
     public function __construct(){
@@ -31,6 +44,16 @@ class SessionsController extends Controller
            'password'   =>'required|min:6',
         ]);
 
+        $throttles = method_exists($this, 'hasTooManyLoginAttempts');
+
+        if($throttles && $lockedOut = $this->hasTooManyLoginAttempts($request)){
+        	$this->fireLockoutEvent($request);
+
+        	return $this->sendLockoutResponse($request);
+        }
+
+
+
         if(!auth()->attempt($request->only('email','password',$request->has('remember')))){
             //flash('Email or Password is not Correct!');
             //return back()->with();
@@ -46,14 +69,25 @@ class SessionsController extends Controller
         }
 
 
-        $token  = is_api_domain()
+/*        $token  = is_api_domain()
 	            ? jwt() ->attempt($request->only('email','password'))
-	            : auth()->attempt($request->only('email','password'),$request->has('remember'));
+	            : auth()->attempt($request->only('email','password'),$request->has('remember'));*/
+
+	    $token = is_api_domain() ? jwt()->attempt($request->only('email','password'))
+		                         : auth()->attempt($request->only('email','password'),$request->has('remember'));
 
 	    if (! $token) {
 		    if (\App\User::socialUser($request->input('email'))->first()) {
+
 			    return $this->respondSocialUser();
 		    }
+
+		    if($throttles && ! $lockedOut){
+
+		    	$this->incrementLoginAttempts($request);
+		    }
+
+		    return $this->respondLoginFailed();
 	    }
 
         //flash('Welcome Laravel World ' . auth()->user()->name);
