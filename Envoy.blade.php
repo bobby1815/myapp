@@ -1,6 +1,7 @@
 @servers(['web' => 'myapp_deployer'])
 
 
+
 @setup
 $username = 'deployer';                     // 서버의 사용자 계정
 $remote = 'git@github.com:bobby1815/myapp.git';  // 깃허브 저장소 주소
