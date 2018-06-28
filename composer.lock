@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b225571052b18502498ab0d84934f5fd",
+    "content-hash": "fce16f7dfed19be3e33d284b8615aa46",
     "packages": [
         {
             "name": "appkr/api",
@@ -5830,7 +5830,10 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^7.1.3"
+        "php": "^7.2.7"
     },
-    "platform-dev": []
+    "platform-dev": [],
+    "platform-overrides": {
+        "php": "7.2.7"
+    }
 }
