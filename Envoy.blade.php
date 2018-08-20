@@ -3,13 +3,13 @@
 
 
 @setup
-$username = 'deployer';                     // 서버의 사용자 계정
-$remote = 'https://github.com/bobby1815/myapp.git';  // 깃허브 저장소 주소
-$base_dir = "/home/{$username}/www";        // 웹서비스를 담을 기본 디렉터리
-$project_root = "{$base_dir}/myapp";        // 프로젝트 루트 디렉터리
-$shared_dir = "{$base_dir}/shared";         // 새 코드를 배포해도 이전 코드와 연속성을 유지하는 하는 파일/디렉터리 모음
-$release_dir = "{$base_dir}/releases";      // 깃허브에서 받은 코드(릴리스)를 담을 디렉터리
-$distname = 'release_' . date('YmdHis');    // 릴리스 이름(디렉터리 이름)
+$username = 'deployer';                                 // 서버의 사용자 계정
+$remote = 'https://github.com/bobby1815/myapp.git';     // 깃허브 저장소 주소
+$base_dir = "/home/{$username}/www";                    // 웹서비스를 담을 기본 디렉터리
+$project_root = "{$base_dir}/myapp";                    // 프로젝트 루트 디렉터리
+$shared_dir = "{$base_dir}/shared";                     // 새 코드를 배포해도 이전 코드와 연속성을 유지하는 하는 파일/디렉터리 모음
+$release_dir = "{$base_dir}/releases";                  // 깃허브에서 받은 코드(릴리스)를 담을 디렉터리
+$distname = 'release_' . date('YmdHis');                // 릴리스 이름(디렉터리 이름)
 
 $required_dirs = [
 $shared_dir,
@@ -61,3 +61,21 @@ sudo service php7.2-fpm restart;
 HOSTNAME=$(hostname);
 echo "Hello Envoy! Responding from $HOSTNAME";
 @endtask
+
+
+@task('prune', ['on' => 'vm'])
+if [ ! -f {{ $base_dir }}/officer.php ]; then
+echo '"officer.php" script not found.';
+echo '\$ envoy run hire_officer';
+exit 1;
+fi;
+
+@if (isset($keep) and $keep > 0)
+    php {{ $base_dir }}/officer.php prune {{ $keep }};
+@else
+    echo 'Must provide --keep=n, where n is a number.';
+@endif
+@endtask
+
+
+

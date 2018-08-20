@@ -1,79 +1,82 @@
+<div class="form-group {{ $errors->has('title') ? 'has-error' : '' }}">
+    <label for="title">{{ trans('forum.articles.form_title') }}</label>
+    <input type="text" name="title" id="title" value="{{ old('title', $article->title) }}" class="form-control"/>
+    {!! $errors->first('title', '<span class="form-error">:message</span>') !!}
+</div>
+
+<div class="form-group {{ $errors->has('tags') ? 'has-error' : '' }}">
+    <label for="tags">{{ trans('forum.articles.form_tags') }}</label>
+    <select name="tags[]" id="tags" multiple="multiple" class="form-control" >
+        @foreach($allTags as $tag)
+            <option value="{{ $tag->id }}" {{ $article->tags->contains($tag->id) ? 'selected="selected"' : '' }}>
+                {{ $tag->{$currentLocale} }}
+            </option>
+        @endforeach
+    </select>
+    {!! $errors->first('tags', '<span class="form-error">:message</span>') !!}
+</div>
+
+<div class="form-group {{ $errors->has('content') ? 'has-error' : '' }}">
+    <label for="content">{{ trans('forum.articles.form_content') }}</label>
+    <textarea name="content" id="content" rows="10" class="form-control">{{ old('content', $article->content) }}</textarea>
+    {!! $errors->first('content', '<span class="form-error">:message</span>') !!}
+
+    {{--마크다운 컴파일 결과 미리보기--}}
+    <div class="preview__content">
+        {!! markdown(old('content', '...')) !!}
+    </div>
+</div>
+
 <div class="form-group">
     <div class="checkbox">
         <label>
             <input type="checkbox" name="notification" value="{{ old('notification', $article->notification) }}">
-            Get alram when replies are here!
+            {{ trans('forum.articles.notify_me') }}
         </label>
     </div>
 </div>
 
-<div class="form-group {{$errors->has('title') ? 'has-error' : ''}}">
-    <label for="title">Title</label>
-    <input type="text" name="title" id="title" value="{{old('title' ,$article->title)}}" class="form-control">
-    {!! $errors->first('title','<span class="for-error">:message</span>') !!}
-</div>
+<div class="form-group">
+    <label for="my-dropzone">{{ trans('forum.articles.form_files') }}
+        <small class="text-muted">
+            <i class="fa fa-chevron-down"></i>
+            {{ trans('forum.articles.open_files') }}
+        </small>
+        <small class="text-muted" style="display: none;">
+            <i class="fa fa-chevron-up"></i>
+            {{ trans('forum.articles.close_files') }}
+        </small>
+    </label>
 
-<div class="form-group {{$errors->has('tags') ? 'has-error' : ''}} ">
-    <label for="tags">Tags</label>
-    <select name="tags[]" id="tags" multiple="multiple" class="form-control">
-        @foreach($allTags as $tag)
-            <option value="{{$tag->id}}" {{$article->tags->contains($tag->id) ? 'selected="selected"' : ''}}>{{$tag->name}}</option>
-        @endforeach
-    </select>
-    {!! $errors->first('tags','<span class="for-error">:message</span>0') !!}
-</div>
-
-<div class="form-group {{$errors->has('content') ? 'has-error' : ''}}">
-    <label for="content">Content</label>
-    <textarea name="content" id="content" rows="10" class="form-control">{{old('content',$article->content)}}</textarea>
-    {!! $errors->first('content','<span class="for-error">:message</span>') !!}
-</div>
-
-
-{{--<div class="form-group{{$errors->has('files') ? 'has-error' : ''}}">
-    <label for="files">FILE</label>
-    <input type="file" class="corm-control" multiple="multiple" name="file[]">
-    {!! $errors->first('files.0','<span class="form-error">:message</span>') !!}
-</div>--}}
-
-<div id="my-dropzone" class="dropzone"></div>
+    <div id="my-dropzone" class="dropzone"></div>
 </div>
 
 @section('script')
     @parent
     <script>
-        $("#tags").select2({
-            placeholder: 'Select Tags(Max :3)',
-            maximumSelectionLength: 3
-        });
-
-
         var form = $('form').first(),
             dropzone  = $('div.dropzone'),
             dzControl = $('label[for=my-dropzone]>small');
-
-
         /* Dropzone */
         Dropzone.autoDiscover = false;
-
-        var myDropzone = new Dropzone('div#my-dropzone',{
+        // 드롭존 인스턴스 생성.
+        var myDropzone = new Dropzone('div#my-dropzone', {
             url: '/attachments',
-            paramName : 'files',
+            paramName: 'files',
             maxFilesize: 3,
-            acceptedFiles : '.jpg,.png,.zip,.tar',
-            uploadMultiple : true,
-            params :{
-                _token : $('meta[name="csrf-token"]').attr('content'),
-                article_id : '{{$article->id}}'
-            } ,
-            dictDefaultMessage : '<div class="text-center text-muted">' +
-            '<h2>Drop file over here!</h2>' +
-            '<p>(Or click here!)</p>',
-            dictFileTooBig : 'File Size is 3Mb for each',
-            dictInvalidFileType:'File only available jpg, png,zip,tar Files'
+            acceptedFiles: '.{{ implode(',.', config('project.mimes')) }}',
+            uploadMultiple: true,
+            params: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                article_id: '{{ $article->id }}'
+            },
+            dictDefaultMessage: '<div class="text-center text-muted">' +
+            "<h2>{{ trans('forum.articles.dz_drop') }}</h2>" +
+            "<p>{{ trans('forum.articles.dz_click') }}</p></div>",
+            dictFileTooBig: "{{ trans('forum.articles.dz_toobig') }}",
+            dictInvalidFileType: '{{ trans('forum.articles.dz_filetyle', ['accepted' => implode(',', config('project.mimes'))]) }}',
+            addRemoveLinks: true
         });
-
-
         // 파일 업로드 성공 이벤트 리스너.
         myDropzone.on('successmultiple', function(file, data) {
             for (var i= 0,len=data.length; i<len; i++) {
@@ -91,7 +94,6 @@
                 }
             }
         });
-
         // 파일 삭제 이벤트 리스너.
         myDropzone.on('removedfile', function(file) {
             // 사용자가 이미지를 삭제하면 UI의 DOM 레벨에서 사라진다.
@@ -106,7 +108,6 @@
                 }
             })
         });
-
         // 'attachments[]' 숨은 필드를 만들거나 제거한다.
         var handleFormElement = function(id, remove) {
             if (remove) {
@@ -141,5 +142,29 @@
             dropzone.fadeToggle(0);
             dzControl.fadeToggle(0);
         });
+        /* select2 */
+        $('#tags').select2({
+            placeholder: '{{ trans('forum.articles.s2_select') }}',
+            maximumSelectionLength: 3
+        });
+        /* 이메일 알림 체크박스 조작 */
+        var notifyElem = $('input[name="notification"]');
+        notifyElem.on('click', function (e) {
+            var self = $(this),
+                turnOn = self.val() ? false : true;
+            if (turnOn) {
+                self.val(1);
+                self.attr('checked', 'checked');
+            } else {
+                self.removeAttr('value');
+                self.removeAttr('checked');
+            }
+        });
+        if (Laravel.currentRouteName == 'articles.create') {
+            notifyElem.val(1);
+        }
+        if (notifyElem.val()) {
+            notifyElem.attr('checked', 'checked');
+        }
     </script>
 @stop
