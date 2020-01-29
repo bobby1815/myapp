@@ -206,7 +206,7 @@ return [
 		'Image' => Intervention\Image\Facades\Image::class,
 		'Flash' => Laracasts\Flash\Flash::class,
 		'Socialite' => Laravel\Socialite\Facades\Socialite::class,
-		'Slack' => Maknz\Slack\Facades\Slack::class,
+		'Slack' => maknz\slack\Facades\Slack::class,
 		'JWTAuth'   =>Tymon\JWTAuth\Facades\JWTAuth::class,
 		'JWTFactory'=>Tymon\JWTAuth\Facades\JWTFactory::class,
 	],

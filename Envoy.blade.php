@@ -1,15 +1,35 @@
+##--------------------------------------------------------------------------
+# List of tasks, that you can run...
+# e.g. envoy run hello
+#--------------------------------------------------------------------------
+#
+# hello     Check ssh connection
+# deploy    Publish new release
+# list      Show list of releases
+# checkout  Checkout to the given release (must provide --release=/path/to/release)
+# prune     Purge old releases (must provide --keep=n, where n is a number)
+#
+#--------------------------------------------------------------------------
+# Note that the server shoulbe be accessible through ssh with 'username' account
+# $ ssh username@hostname
+#--------------------------------------------------------------------------
+##
+
 @servers(['web' => 'myapp_deployer'])
 
 
-
 @setup
-$username = 'deployer';                                 // 서버의 사용자 계정
-$remote = 'https://github.com/bobby1815/myapp.git';     // 깃허브 저장소 주소
-$base_dir = "/home/{$username}/www";                    // 웹서비스를 담을 기본 디렉터리
-$project_root = "{$base_dir}/myapp";                    // 프로젝트 루트 디렉터리
-$shared_dir = "{$base_dir}/shared";                     // 새 코드를 배포해도 이전 코드와 연속성을 유지하는 하는 파일/디렉터리 모음
-$release_dir = "{$base_dir}/releases";                  // 깃허브에서 받은 코드(릴리스)를 담을 디렉터리
-$distname = 'release_' . date('YmdHis');                // 릴리스 이름(디렉터리 이름)
+$username = 'deployer';                       // username at the server
+$remote = 'https://github.com/bobby1815/myapp.git';   // github repository to clone
+$base_dir = "/home/{$username}/www";          // document that holds projects
+$project_root = "{$base_dir}/myapp";       // project root
+$shared_dir = "{$base_dir}/shared";           // directory that will house shared dir/files
+$release_dir = "{$base_dir}/releases";        // release directory
+$distname = 'release_' . date('YmdHis');      // release name
+
+// ------------------------------------------------------------------
+// Leave the following as it is, if you don't know what they are for.
+// ------------------------------------------------------------------
 
 $required_dirs = [
 $shared_dir,
@@ -20,41 +40,8 @@ $shared_item = [
 "{$shared_dir}/.env" => "{$release_dir}/{$distname}/.env",
 "{$shared_dir}/storage" => "{$release_dir}/{$distname}/storage",
 "{$shared_dir}/cache" => "{$release_dir}/{$distname}/bootstrap/cache",
-"{$shared_dir}/files" => "{$release_dir}/{$distname}/public/files",
 ];
 @endsetup
-
-
-@task('deploy', ['on' => ['web']])
-@foreach ($required_dirs as $dir)
-    [ ! -d {{ $dir }} ] && mkdir -p {{ $dir }};
-@endforeach
-
-cd {{ $release_dir }} && git clone -b master {{ $remote }} {{ $distname }};
-
-[ ! -f {{ $shared_dir }}/.env ] && cp {{ $release_dir }}/{{ $distname }}/.env.example {{ $shared_dir }}/.env;
-[ ! -d {{ $shared_dir }}/storage ] && cp -R {{ $release_dir }}/{{ $distname }}/storage {{ $shared_dir }};
-[ ! -d {{ $shared_dir }}/cache ] && cp -R {{ $release_dir }}/{{ $distname }}/bootstrap/cache {{ $shared_dir }};
-[ ! -d {{ $shared_dir }}/files ] && cp -R {{ $release_dir }}/{{ $distname }}/public/files {{ $shared_dir }};
-
-@foreach($shared_item as $global => $local)
-    [ -f {{ $local }} ] && rm {{ $local }};
-    [ -d {{ $local }} ] && rm -rf {{ $local }};
-    ln -nfs {{ $global }} {{ $local }};
-@endforeach
-
-cd {{ $release_dir }}/{{ $distname }} && composer install --prefer-dist --no-scripts --no-dev;
-
-ln -nfs {{ $release_dir }}/{{ $distname }} {{ $project_root }};
-
-chmod -R 775 {{ $shared_dir }}/storage;
-chmod -R 775 {{ $shared_dir }}/cache;
-chmod -R 775 {{ $shared_dir }}/files;
-chgrp -h -R www-data {{ $release_dir }}/{{ $distname }};
-
-sudo service nginx restart;
-sudo service php7.2-fpm restart;
-@endtask
 
 
 @task('hello', ['on' => ['web']])
@@ -63,7 +50,67 @@ echo "Hello Envoy! Responding from $HOSTNAME";
 @endtask
 
 
-@task('prune', ['on' => 'vm'])
+@task('deploy', ['on' => ['web']])
+{{--Create directories if not exists--}}
+@foreach ($required_dirs as $dir)
+    [ ! -d {{ $dir }} ] && mkdir -p {{ $dir }};
+@endforeach
+
+{{--Download book keeping officer--}}
+if [ ! -f {{ $base_dir }}/officer.php ]; then
+wget https://raw.githubusercontent.com/appkr/envoy/master/scripts/officer.php -O {{ $base_dir }}/officer.php;
+fi;
+
+{{--Clone code from git--}}
+cd {{ $release_dir }} && git clone -b master {{ $remote }} {{ $distname }};
+
+[ ! -f {{ $shared_dir }}/.env ] && \
+[ -f {{ $release_dir }}/{{ $distname }}/.env.example ] && \
+cp {{ $release_dir }}/{{ $distname }}/.env.example {{ $shared_dir }}/.env;
+[ ! -d {{ $shared_dir }}/storage ] && \
+[ -d {{ $release_dir }}/{{ $distname }}/storage ] && \
+cp -R {{ $release_dir }}/{{ $distname }}/storage {{ $shared_dir }};
+[ ! -d {{ $shared_dir }}/cache ] && \
+[ -d {{ $release_dir }}/{{ $distname }}/bootstrap/cache ] && \
+cp -R {{ $release_dir }}/{{ $distname }}/bootstrap/cache {{ $shared_dir }};
+
+{{--Symlink shared directory to current release.--}}
+{{--e.g. storage, .env, user uploaded file storage, ...--}}
+@foreach($shared_item as $global => $local)
+    [ -f {{ $local }} ] && rm {{ $local }};
+    [ -d {{ $local }} ] && rm -rf {{ $local }};
+    [ -f {{ $global }} ] && ln -nfs {{ $global }} {{ $local }};
+    [ -d {{ $global }} ] && ln -nfs {{ $global }} {{ $local }};
+@endforeach
+
+{{--Run composer install--}}
+cd {{ $release_dir }}/{{ $distname }} && \
+[ -f ./composer.json ] && \
+composer install --prefer-dist --no-scripts --no-dev;
+
+{{--Any additional command here--}}
+{{--e.g. php artisan clear-compiled;--}}
+
+{{--Symlink current release to service directory.--}}
+ln -nfs {{ $release_dir }}/{{ $distname }} {{ $project_root }};
+
+{{--Set permission and change owner--}}
+[ -d {{ $shared_dir }}/storage ] && \
+chmod -R 775 {{ $shared_dir }}/storage;
+[ -d {{ $shared_dir }}/cache ] && \
+chmod -R 775 {{ $shared_dir }}/cache;
+chgrp -h -R www-data {{ $release_dir }}/{{ $distname }};
+
+{{--Book keeping--}}
+php {{ $base_dir }}/officer.php deploy {{ $release_dir }}/{{ $distname }};
+
+{{--Restart web server.--}}
+sudo service nginx restart;
+sudo service php7.0-fpm restart;
+@endtask
+
+
+@task('prune', ['on' => 'web'])
 if [ ! -f {{ $base_dir }}/officer.php ]; then
 echo '"officer.php" script not found.';
 echo '\$ envoy run hire_officer';
@@ -78,4 +125,54 @@ fi;
 @endtask
 
 
+@task('hire_officer', ['on' => 'web'])
+{{--Download "officer.php" to the server--}}
+wget https://raw.githubusercontent.com/appkr/envoy/master/scripts/officer.php -O {{ $base_dir }}/officer.php;
+echo '"officer.php" is ready! Ready to roll master!';
+@endtask
 
+
+@task('list', ['on' => 'web'])
+{{--Show the list of release--}}
+if [ ! -f {{ $base_dir }}/officer.php ]; then
+echo '"officer.php" script not found.';
+echo '\$ envoy run hire_officer';
+exit 1;
+fi;
+
+php {{ $base_dir }}/officer.php list;
+@endtask
+
+
+@task('checkout', ['on' => 'web'])
+{{--checkout to the given release path--}}
+if [ ! -f {{ $base_dir }}/officer.php ]; then
+echo '"officer.php" script not found.';
+echo '\$ envoy run hire_officer';
+exit 1;
+fi;
+
+@if (isset($release))
+    cd {{ $release }};
+
+    {{--Symlink shared directory to the given release.--}}
+    @foreach($shared_item as $global => $local)
+        [ -f {{ $local }} ] && rm {{ $local }};
+        [ -d {{ $local }} ] && rm -rf {{ $local }};
+        ln -nfs {{ $global }} {{ $local }};
+    @endforeach
+
+    {{--Symlink the given release to service directory.--}}
+    ln -nfs {{ $release }} {{ $project_root }};
+
+    {{--Book keeping--}}
+    php {{ $base_dir }}/officer.php checkout {{ $release }};
+    chgrp -h -R www-data {{ $release_dir }}/{{ $distname }};
+
+    {{--Restart web server.--}}
+    sudo service nginx restart;
+    sudo service php7.0-fpm restart;
+@else
+    echo 'Must provide --release=/full/path/to/release.';
+@endif
+@endtask

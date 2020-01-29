@@ -1,4 +1,4 @@
-const elixir = require('laravel-elixir');
+noconst elixir = require('laravel-elixir');
 
 require('laravel-elixir-vue');
 
