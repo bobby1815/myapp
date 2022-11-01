@@ -18,7 +18,7 @@
     "bootstrap-sass": "^3.3.7",
     "dropzone": "^5.4.0",
     "font-awesome": "^4.7.0",
-    "gulp": "^3.3.4",
+    "gulp": "^3.9.1",
     "highlightjs": "^9.10.0",
     "jquery-tabby": "^0.13.1",
     "laravel-elixir": "^6.0.0-18",
